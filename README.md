@@ -61,3 +61,4 @@ QGC's interface is translated by the community — help translate it into your l
 ## Star History
 
 [![Star History Chart](https://star-history.dera.page/svg?repos=mavlink/qgroundcontrol&type=date&legend=top-left)](https://star-history.dera.page/#mavlink/qgroundcontrol&type=date&legend=top-left)
+
