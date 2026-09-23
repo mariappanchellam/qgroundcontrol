@@ -1,0 +1,63 @@
+name: Simple Linux Build (Manual)
+
+# Minimal manually-triggered Linux build for a quick sanity check on this fork.
+# This avoids AWS, CodeQL, and release signing requirements.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Release linux_gcc_64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build Setup
+        uses: ./.github/actions/build-setup
+        with:
+          qt-host: linux
+          qt-arch: linux_gcc_64
+          build-type: Release
+
+      - name: Install Dependencies
+        uses: ./.github/actions/install-dependencies
+
+      - name: Configure
+        uses: ./.github/actions/cmake-configure
+        with:
+          build-dir: ${{ runner.temp }}/build
+          build-type: Release
+          preset: Linux
+
+      - name: Build
+        uses: ./.github/actions/cmake-build
+        with:
+          build-dir: ${{ runner.temp }}/build
+          build-type: Release
+
+      - name: Verify Executable
+        uses: ./.github/actions/verify-executable
+        with:
+          binary-path: ${{ runner.temp }}/build/Release/QGroundControl
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: QGroundControl-linux_gcc_64
+          path: ${{ runner.temp }}/build/Release/QGroundControl
+          if-no-files-found: error
+          retention-days: 7
