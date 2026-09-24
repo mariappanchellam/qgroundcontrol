@@ -25,6 +25,16 @@ on:
         options:
           - Release
           - Debug
+      version:
+        description: 'Tag/branch/SHA to build (mobile-friendly text field; leave blank for this branch)'
+        required: false
+        default: ''
+        type: string
+      repo:
+        description: 'owner/repo to build from (default: mavlink/qgroundcontrol stable upstream)'
+        required: false
+        default: 'mavlink/qgroundcontrol'
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -136,9 +146,35 @@ jobs:
           metrics: cpu,network,memory,disk,io
           show_costs: summary
 
+      # Lets a manual dispatch build any tag/branch/SHA of any repo (default: upstream
+      # mavlink stable) instead of only the ref this workflow was launched on. Needed
+      # because the GitHub mobile app's "Run workflow" ref picker cannot select tags —
+      # only plain workflow_dispatch text inputs are usable there.
+      - name: Resolve build target
+        id: target
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
+            repo="${{ inputs.repo }}"
+            ref="${{ inputs.version }}"
+          else
+            repo="${{ github.repository }}"
+            ref="${{ github.ref }}"
+          fi
+          echo "repo=$repo" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          if [ "$repo" != "${{ github.repository }}" ]; then
+            echo "token=" >> "$GITHUB_OUTPUT"
+          else
+            echo "token=${{ github.token }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
+          repository: ${{ steps.target.outputs.repo }}
+          ref: ${{ steps.target.outputs.ref }}
+          token: ${{ steps.target.outputs.token }}
           fetch-depth: ${{ github.event_name == 'pull_request' && 1 || 0 }}
           persist-credentials: false
 
