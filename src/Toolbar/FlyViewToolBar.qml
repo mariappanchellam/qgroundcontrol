@@ -80,6 +80,7 @@ Item {
                             Layout.fillHeight:  true
                             icon.source:        "/res/QGCLogoFull.svg"
                             logo:               true
+                            animateLogo:        true
                             onClicked:          mainWindow.showToolSelectDialog()
                         }
 

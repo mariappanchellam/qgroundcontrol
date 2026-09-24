@@ -14,7 +14,8 @@ Button {
     rightPadding:       _horizontalMargin
     checkable:          false
 
-    property bool logo: false
+    property bool logo:        false
+    property bool animateLogo: false   // Slow continuous spin, opt-in per instance (e.g. Fly View toolbar only)
 
     property real _horizontalMargin: ScreenTools.defaultFontPixelWidth
 
@@ -38,6 +39,14 @@ Button {
             width:                  height
             source:                 visible ? button.icon.source : ""
             anchors.verticalCenter: parent.verticalCenter
+
+            RotationAnimation on rotation {
+                running:  button.logo && button.animateLogo
+                from:     0
+                to:       360
+                duration: 60000
+                loops:    Animation.Infinite
+            }
         }
         QGCColoredImage {
             visible:                !button.logo
